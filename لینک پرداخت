@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ارسال پستی و درگاه پرداخت</title>
+    <style>
+        /* ============ ریست و پایه ============ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', 'IRANSans', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        body {
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        button {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* ============ فرم ارسال ============ */
+        .shipping-section {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 35px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .shipping-section.active {
+            display: block;
+            animation: slideUp 0.4s ease;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 24px;
+            color: #00529b;
+            margin-bottom: 25px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #dc3545;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00529b;
+            box-shadow: 0 0 0 3px rgba(0, 82, 155, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* ============ جعبه اطلاعات ارسال ============ */
+        .shipping-info-box {
+            background: #e8f0fe;
+            border: 1px solid #cce0ff;
+            padding: 18px;
+            border-radius: 8px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .shipping-method {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #00529b;
+        }
+
+        .shipping-cost {
+            font-size: 26px;
+            font-weight: bold;
+            color: #ff6600;
+            margin-top: 10px;
+        }
+
+        .shipping-delivery {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        /* ============ دکمه‌ها ============ */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #00529b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #003d73;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* ============ درگاه پرداخت ============ */
+        .payment-gateway {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .payment-gateway.active {
+            display: block;
+            animation: slideUp 0.4s ease;
+        }
+
+        .payment-header {
+            background: #00529b;
+            color: white;
+            padding: 18px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .payment-header-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .shaparak-badge {
+            background: #ff6600;
+            padding: 5px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .payment-body {
+            padding: 30px 25px;
+        }
+
+        .merchant-box {
+            background: #f0f4f8;
+            border-right: 5px solid #00529b;
+            padding: 14px;
+            border-radius: 4px;
+            margin-bottom: 22px;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .amount-display {
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 22px;
+        }
+
+        .amount-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .amount-value {
+            font-size: 30px;
+            font-weight: bold;
+            color: #00529b;
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        .amount-value small {
+            font-size: 16px;
+        }
+
+        .card-input-group {
+            margin-bottom: 18px;
+        }
+
+        .card-input-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .card-number-input {
+            width: 100%;
+            padding: 14px;
+            font-size: 17px;
+            text-align: center;
+            letter-spacing: 3px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            direction: ltr;
+            font-weight: bold;
+        }
+
+        .card-number-input:focus {
+            outline: none;
+            border-color: #00529b;
+        }
+
+        .card-details-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .card-details-row input {
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+            text-align: center;
+            direction: ltr;
+            font-weight: bold;
+        }
+
+        .card-details-row input:focus {
+            outline: none;
+            border-color: #00529b;
+        }
+
+        .otp-section {
+            margin-top: 5px;
+        }
+
+        .otp-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .otp-input-group input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+            text-align: center;
+            direction: ltr;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .otp-input-group input:focus {
+            outline: none;
+            border-color: #00529b;
+        }
+
+        .otp-request-btn {
+            padding: 12px 18px;
+            background: #00529b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .otp-request-btn:hover {
+            background: #003d73;
+        }
+
+        .otp-timer {
+            text-align: center;
+            margin-top: 10px;
+            color: #dc3545;
+            font-size: 13px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .payment-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* ============ صفحه موفقیت ============ */
+        .success-page {
+            display: none;
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .success-page.active {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        .success-icon {
+            font-size: 70px;
+            margin-bottom: 15px;
+            animation: bounceIn 0.6s ease;
+        }
+
+        .success-title {
+            color: #28a745;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .success-message {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tracking-box {
+            background: #e8f0fe;
+            border: 2px solid #00529b;
+            border-radius: 6px;
+            padding: 18px;
+            margin: 20px 0;
+        }
+
+        .tracking-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .tracking-number {
+            font-size: 26px;
+            font-weight: bold;
+            color: #00529b;
+            letter-spacing: 3px;
+            margin-top: 8px;
+            font-family: monospace;
+        }
+
+        .order-summary-box {
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 6px;
+            text-align: right;
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 2;
+        }
+
+        .order-summary-box strong {
+            color: #00529b;
+        }
+
+        /* ============ نوتیفیکیشن ============ */
+        .notification {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #28a745;
+            color: white;
+            padding: 13px 25px;
+            border-radius: 6px;
+            z-index: 3000;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        .notification.error {
+            background: #dc3545;
+        }
+
+        /* ============ انیمیشن‌ها ============ */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* ============ ریسپانسیو ============ */
+        @media (max-width: 768px) {
+            .shipping-section,
+            .payment-gateway,
+            .success-page {
+                margin: 10px 0;
+                padding: 20px;
+            }
+
+            .form-row,
+            .card-details-row {
+                grid-template-columns: 1fr;
+            }
+
+            .amount-value {
+                font-size: 24px;
+            }
+
+            .tracking-number {
+                font-size: 22px;
+                letter-spacing: 2px;
+            }
+
+            .section-title {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- ==================== فرم ارسال ==================== -->
+        <div class="shipping-section active" id="shippingSection">
+            <h2 class="section-title">📦 اطلاعات ارسال پستی</h2>
+            <p class="section-subtitle">لطفاً اطلاعات زیر را با دقت کامل کنید</p>
+
+            <div class="form-group">
+                <label>👤 نام و نام خانوادگی <span class="required">*</span></label>
+                <input type="text" id="fullName" placeholder="مثال: علی محمدی">
+            </div>
+
+            <div class="form-group">
+                <label>📱 شماره تماس <span class="required">*</span></label>
+                <input type="tel" id="phone" placeholder="09xxxxxxxxx" maxlength="11">
+            </div>
+
+            <div class="form-group">
+                <label>🏠 آدرس کامل <span class="required">*</span></label>
+                <textarea id="address" rows="3" placeholder="استان، شهر، خیابان، کوچه، پلاک، واحد"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>📍 استان <span class="required">*</span></label>
+                    <select id="province">
+                        <option value="">انتخاب کنید...</option>
+                        <option value="آذربایجان شرقی">آذربایجان شرقی</option>
+                        <option value="آذربایجان غربی">آذربایجان غربی</option>
+                        <option value="اردبیل">اردبیل</option>
+                        <option value="اصفهان">اصفهان</option>
+                        <option value="البرز">البرز</option>
+                        <option value="ایلام">ایلام</option>
+                        <option value="بوشهر">بوشهر</option>
+                        <option value="تهران">تهران</option>
+                        <option value="چهارمحال و بختیاری">چهارمحال و بختیاری</option>
+                        <option value="خراسان جنوبی">خراسان جنوبی</option>
+                        <option value="خراسان رضوی">خراسان رضوی</option>
+                        <option value="خراسان شمالی">خراسان شمالی</option>
+                        <option value="خوزستان">خوزستان</option>
+                        <option value="زنجان">زنجان</option>
+                        <option value="سمنان">سمنان</option>
+                        <option value="سیستان و بلوچستان">سیستان و بلوچستان</option>
+                        <option value="فارس">فارس</option>
+                        <option value="قزوین">قزوین</option>
+                        <option value="قم">قم</option>
+                        <option value="کردستان">کردستان</option>
+                        <option value="کرمان">کرمان</option>
+                        <option value="کرمانشاه">کرمانشاه</option>
+                        <option value="کهگیلویه و بویراحمد">کهگیلویه و بویراحمد</option>
+                        <option value="گلستان">گلستان</option>
+                        <option value="گیلان">گیلان</option>
+                        <option value="لرستان">لرستان</option>
+                        <option value="مازندران">مازندران</option>
+                        <option value="مرکزی">مرکزی</option>
+                        <option value="هرمزگان">هرمزگان</option>
+                        <option value="همدان">همدان</option>
+                        <option value="یزد">یزد</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>📍 شهر <span class="required">*</span></label>
+                    <input type="text" id="city" placeholder="مثال: تبریز">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>📮 کد پستی <span class="required">*</span></label>
+                <input type="text" id="postalCode" placeholder="۱۰ رقم" maxlength="10">
+            </div>
+
+            <div class="shipping-info-box">
+                <div class="shipping-method">
+                    <span>🚚</span>
+                    <span>ارسال با تیپاکس</span>
+                </div>
+                <div class="shipping-cost">۲۵,۰۰۰ تومان</div>
+                <div class="shipping-delivery">⏱️ زمان تحویل: ۲ تا ۳ روز کاری</div>
+            </div>
+
+            <button class="btn btn-primary" onclick="goToPayment()">💳 ادامه و پرداخت</button>
+        </div>
+
+        <!-- ==================== درگاه پرداخت ==================== -->
+        <div class="payment-gateway" id="paymentGateway">
+            <div class="payment-header">
+                <div class="payment-header-title">🏦 درگاه پرداخت اینترنتی</div>
+                <div class="shaparak-badge">شاپرک</div>
+            </div>
+
+            <div class="payment-body">
+                <div class="merchant-box">
+                    <strong>فروشگاه تبریز شیک</strong><br>
+                    شناسه پذیرنده: 1234567890123456<br>
+                    تاریخ: <span id="paymentDate"></span>
+                </div>
+
+                <div class="amount-display">
+                    <div class="amount-label">مبلغ قابل پرداخت</div>
+                    <div class="amount-value" id="paymentAmount">۰ <small>ریال</small></div>
+                </div>
+
+                <div class="card-input-group">
+                    <label>💳 شماره کارت</label>
+                    <input type="text" id="cardNumber" class="card-number-input" 
+                           placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19">
+                </div>
+
+                <div class="card-details-row">
+                    <div class="card-input-group">
+                        <label>تاریخ انقضا</label>
+                        <input type="text" id="expiryDate" placeholder="MM/YY" maxlength="5">
+                    </div>
+                    <div class="card-input-group">
+                        <label>CVV2</label>
+                        <input type="password" id="cvv" placeholder="***" maxlength="4">
+                    </div>
+                </div>
+
+                <div class="card-input-group otp-section">
+                    <label>🔐 رمز پویا (OTP)</label>
+                    <div class="otp-input-group">
+                        <input type="password" id="otpInput" placeholder="رمز ارسال شده" maxlength="8">
+                        <button class="otp-request-btn" onclick="requestOtp()">📲 دریافت رمز</button>
+                    </div>
+                    <div class="otp-timer" id="otpTimer">
+                        ⏱️ زمان باقیمانده: <span id="timerNumber">02:00</span>
+                    </div>
+                </div>
+
+                <button class="btn btn-success" onclick="processPayment()" style="margin-top: 22px;">پرداخت 💳</button>
+                <button class="btn btn-secondary" onclick="backToShipping()">انصراف از پرداخت</button>
+
+                <div class="payment-note">
+                    🔒 اطلاعات شما با SSL رمزنگاری می‌شود
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== صفحه موفقیت ==================== -->
+        <div class="success-page" id="successPage">
+            <div class="success-icon">✅</div>
+            <div class="success-title">پرداخت موفق!</div>
+            <p class="success-message">سفارش شما با موفقیت ثبت شد.</p>
+
+            <div class="tracking-box">
+                <div class="tracking-label">📦 کد پیگیری تیپاکس</div>
+                <div class="tracking-number" id="trackingCode">TIP-XXXXXX</div>
+            </div>
+
+            <div class="order-summary-box" id="orderSummary"></div>
+
+            <button class="btn btn-primary" onclick="resetAll()">🔄 ثبت سفارش جدید</button>
+        </div>
+
+    </div>
+
+    <script>
+        // ==================== متغیرها ====================
+        let otpTimerInterval = null;
+        let otpTimeLeft = 120;
+        let generatedOtp = null;
+        const shippingCost = 25000;
+        const orderAmount = 850000; // مبلغ نمونه سفارش (۸۵۰ هزار تومان)
+
+        // ==================== ناوبری ====================
+        function goToPayment() {
+            // اعتبارسنجی فرم
+            const fullName = document.getElementById('fullName').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const province = document.getElementById('province').value;
+            const city = document.getElementById('city').value.trim();
+            const postalCode = document.getElementById('postalCode').value.trim();
+
+            if (!fullName) {
+                showNotification('⚠️ نام و نام خانوادگی را وارد کنید!', 'error');
+                document.getElementById('fullName').focus();
+                return;
+            }
+
+            if (!phone.startsWith('09') || phone.length !== 11 || isNaN(phone)) {
+                showNotification('⚠️ شماره موبایل باید با 09 شروع شود و ۱۱ رقم باشد!', 'error');
+                document.getElementById('phone').focus();
+                return;
+            }
+
+            if (!address || address.length < 10) {
+                showNotification('⚠️ آدرس کامل را وارد کنید! (حداقل ۱۰ کاراکتر)', 'error');
+                document.getElementById('address').focus();
+                return;
+            }
+
+            if (!province) {
+                showNotification('⚠️ استان را انتخاب کنید!', 'error');
+                document.getElementById('province').focus();
+                return;
+            }
+
+            if (!city) {
+                showNotification('⚠️ شهر را وارد کنید!', 'error');
+                document.getElementById('city').focus();
+                return;
+            }
+
+            if (postalCode.length !== 10 || isNaN(postalCode)) {
+                showNotification('⚠️ کد پستی باید ۱۰ رقم باشد!', 'error');
+                document.getElementById('postalCode').focus();
+                return;
+            }
+
+            // محاسبه مبلغ کل
+            const totalAmount = orderAmount + shippingCost;
+            document.getElementById('paymentAmount').innerHTML = 
+                formatPrice(totalAmount) + ' <small>ریال</small>';
+
+            // نمایش تاریخ
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('fa-IR');
+            document.getElementById('paymentDate').textContent = dateStr;
+
+            // جابجایی بین صفحات
+            document.getElementById('shippingSection').classList.remove('active');
+            document.getElementById('paymentGateway').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function backToShipping() {
+            document.getElementById('paymentGateway').classList.remove('active');
+            document.getElementById('shippingSection').classList.add('active');
+            
+            if (otpTimerInterval) {
+                clearInterval(otpTimerInterval);
+            }
+            document.getElementById('otpTimer').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        // ==================== رمز پویا ====================
+        function requestOtp() {
+            generatedOtp = Math.floor(100000 + Math.random() * 900000);
+            
+            // نمایش رمز در کنسول و نوتیفیکیشن
+            console.log('🔐 رمز پویا (تست): ' + generatedOtp);
+            showNotification('📲 رمز پویا: ' + generatedOtp, 'success');
+            
+            document.getElementById('otpTimer').style.display = 'block';
+            startOtpTimer();
+        }
+
+        function startOtpTimer() {
+            otpTimeLeft = 120;
+            updateTimerDisplay();
+            
+            if (otpTimerInterval) {
+                clearInterval(otpTimerInterval);
+            }
+            
+            otpTimerInterval = setInterval(function() {
+                otpTimeLeft--;
+                updateTimerDisplay();
+                
+                if (otpTimeLeft <= 0) {
+                    clearInterval(otpTimerInterval);
+                    document.getElementById('otpTimer').style.display = 'none';
+                    generatedOtp = null;
+                    showNotification('⏰ زمان رمز پویا تمام شد! دوباره تلاش کنید.', 'error');
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(otpTimeLeft / 60);
+            const seconds = otpTimeLeft % 60;
+            document.getElementById('timerNumber').textContent = 
+                String(minutes).padStart(2, '0') + ':' + 
+                String(seconds).padStart(2, '0');
+        }
+
+        // ==================== پرداخت ====================
+        function processPayment() {
+            const cardNumber = document.getElementById('cardNumber').value.replace(/-/g, '');
+            const expiryDate = document.getElementById('expiryDate').value;
+            const cvv = document.getElementById('cvv').value;
+            const otpInput = document.getElementById('otpInput').value;
+
+            if (cardNumber.length !== 16 || isNaN(cardNumber)) {
+                showNotification('⚠️ شماره کارت باید ۱۶ رقم باشد!', 'error');
+                document.getElementById('cardNumber').focus();
+                return;
+            }
+
+            if (expiryDate.length !== 5 || expiryDate.indexOf('/') === -1) {
+                showNotification('⚠️ تاریخ انقضا را کامل وارد کنید! (MM/YY)', 'error');
+                document.getElementById('expiryDate').focus();
+                return;
+            }
+
+            if (cvv.length < 3 || isNaN(cvv)) {
+                showNotification('⚠️ CVV2 را وارد کنید!', 'error');
+                document.getElementById('cvv').focus();
+                return;
+            }
+
+            if (otpInput.length < 6) {
+                showNotification('⚠️ رمز پویا را وارد کنید!', 'error');
+                document.getElementById('otpInput').focus();
+                return;
+            }
+
+            // غیرفعال کردن دکمه پرداخت
+            const payBtn = document.querySelector('.btn-success');
+            payBtn.disabled = true;
+            payBtn.style.opacity = '0.6';
+            payBtn.textContent = '⏳ در حال پردازش...';
+
+            showNotification('⏳ در حال پردازش پرداخت...', 'success');
+
+            // شبیه‌سازی پرداخت
+            setTimeout(function() {
+                const tracking = 'TIP-' + Math.floor(100000 + Math.random() * 900000);
+                
+                showSuccess(tracking);
+                saveOrder(tracking);
+                
+                payBtn.disabled = false;
+                payBtn.style.opacity = '1';
+                payBtn.textContent = 'پرداخت 💳';
+            }, 2000);
+        }
+
+        function showSuccess(tracking) {
+            document.getElementById('paymentGateway').classList.remove('active');
+            document.getElementById('successPage').classList.add('active');
+            
+            document.getElementById('trackingCode').textContent = tracking;
+            
+            const fullName = document.getElementById('fullName').value;
+            const phone = document.getElementById('phone').value;
+            const province = document.getElementById('province').value;
+            const city = document.getElementById('city').value;
+            const address = document.getElementById('address').value;
+            const postalCode = document.getElementById('postalCode').value;
+            
+            const totalAmount = orderAmount + shippingCost;
+            
+            document.getElementById('orderSummary').innerHTML = 
+                '<strong>📋 خلاصه سفارش:</strong><br><br>' +
+                '👤 نام: ' + fullName + '<br>' +
+                '📱 تلفن: ' + phone + '<br>' +
+                '📍 آدرس: ' + province + '، ' + city + '<br>' +
+                '🏠 ' + address + '<br>' +
+                '📮 کد پستی: ' + postalCode + '<br>' +
+                '💰 مبلغ سفارش: ' + formatPrice(orderAmount) + ' تومان<br>' +
+                '🚚 هزینه ارسال: ' + formatPrice(shippingCost) + ' تومان<br>' +
+                '💳 <strong>مبلغ کل: ' + formatPrice(totalAmount) + ' تومان</strong>';
+            
+            window.scrollTo(0, 0);
+        }
+
+        function saveOrder(tracking) {
+            const order = {
+                trackingCode: tracking,
+                customer: {
+                    name: document.getElementById('fullName').value,
+                    phone: document.getElementById('phone').value,
+                    address: document.getElementById('address').value,
+                    province: document.getElementById('province').value,
+                    city: document.getElementById('city').value,
+                    postalCode: document.getElementById('postalCode').value
+                },
+                amount: orderAmount,
+                shippingCost: shippingCost,
+                total: orderAmount + shippingCost,
+                date: new Date().toISOString()
+            };
+            
+            let orders = [];
+            try {
+                orders = JSON.parse(localStorage.getItem('shipping_orders') || '[]');
+            } catch(e) {
+                orders = [];
+            }
+            
+            orders.push(order);
+            localStorage.setItem('shipping_orders', JSON.stringify(orders));
+        }
+
+        function resetAll() {
+            // پاک کردن فرم‌ها
+            document.getElementById('fullName').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('address').value = '';
+            document.getElementById('province').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('postalCode').value = '';
+            document.getElementById('cardNumber').value = '';
+            document.getElementById('expiryDate')
